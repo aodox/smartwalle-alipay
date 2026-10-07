@@ -1,4 +1,4 @@
-module github.com/smartwalle/alipay/v3
+module github.com/aodox/smartwalle-alipay/v3
 
 go 1.18
 

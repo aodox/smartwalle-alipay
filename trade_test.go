@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/smartwalle/alipay/v3"
+	"github.com/aodox/smartwalle-alipay/v3"
 )
 
 func TestClient_TradeAppPay(t *testing.T) {
@@ -177,7 +177,7 @@ func TestClient_TradeRefundAsync(t *testing.T) {
 	var p = alipay.TradeRefundAsync{}
 	p.OutTradeNo = "20150320010101001"
 	p.RefundAmount = "10.12"
-	p.RefundReason = "测试退款"
+	p.RefundReason = "测试退�?
 	p.OutRequestNo = "20150320010101001uk"
 	p.NotifyURL = "http://127.0.0.1:9090/notify/ali-refund"
 

@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/smartwalle/alipay/v3"
+	"github.com/aodox/smartwalle-alipay/v3"
 )
 
 var (
@@ -31,22 +31,22 @@ func init() {
 	})
 
 	if err != nil {
-		fmt.Println("初始化支付宝失败, 错误信息为", err)
+		fmt.Println("初始化支付宝失败, 错误信息�?, err)
 		os.Exit(-1)
 	}
 
-	// 加载内容密钥（可选），详情查看 https://opendocs.alipay.com/common/02mse3
+	// 加载内容密钥（可选），详情查�?https://opendocs.alipay.com/common/02mse3
 	fmt.Println("加载内容密钥", client.SetEncryptKey("iotxR/d99T9Awom/UaSqiQ=="))
 
 	// 下面两种方式只能二选一
 	var cert = true
 	if cert {
-		// 使用支付宝证书
+		// 使用支付宝证�?
 		fmt.Println("加载证书", client.LoadAppCertPublicKeyFromFile("appPublicCert.crt"))
 		fmt.Println("加载证书", client.LoadAliPayRootCertFromFile("alipayRootCert.crt"))
 		fmt.Println("加载证书", client.LoadAlipayCertPublicKeyFromFile("alipayPublicCert.crt"))
 	} else {
-		// 使用支付宝公钥
+		// 使用支付宝公�?
 		fmt.Println("加载公钥", client.LoadAliPayPublicKey(aliPublicKey))
 	}
 }

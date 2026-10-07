@@ -2,7 +2,7 @@ package alipay_test
 
 import (
 	"context"
-	"github.com/smartwalle/alipay/v3"
+	"github.com/aodox/smartwalle-alipay/v3"
 	"testing"
 )
 

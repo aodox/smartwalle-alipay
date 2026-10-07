@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/smartwalle/alipay/v3"
+	"github.com/aodox/smartwalle-alipay/v3"
 )
 
 func TestClient_PublicAppAuthorize(t *testing.T) {

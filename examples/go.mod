@@ -1,9 +1,9 @@
-module github.com/smartwalle/alipay/examples
+module github.com/aodox/smartwalle-alipay/examples
 
 go 1.18
 
 require (
-	github.com/smartwalle/alipay/v3 v3.2.16
+	github.com/aodox/smartwalle-alipay/v3 v3.2.16
 	github.com/smartwalle/xid v1.0.7
 )
 
@@ -13,4 +13,4 @@ require (
 	github.com/smartwalle/nsign v1.0.9 // indirect
 )
 
-replace github.com/smartwalle/alipay/v3 => ../
+replace github.com/aodox/smartwalle-alipay/v3 => ../

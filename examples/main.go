@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/smartwalle/alipay/v3"
+	"github.com/aodox/smartwalle-alipay/v3"
 	"github.com/smartwalle/xid"
 )
 
@@ -81,7 +81,7 @@ func callback(writer http.ResponseWriter, request *http.Request) {
 
 	log.Println("回调验证签名通过")
 
-	// 示例一：使用已有接口进行查询
+	// 示例一：使用已有接口进行查�?
 	var outTradeNo = request.Form.Get("out_trade_no")
 	var p = alipay.TradeQuery{}
 	p.OutTradeNo = outTradeNo

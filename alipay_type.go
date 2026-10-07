@@ -18,6 +18,7 @@ const (
 	kFormat       = "JSON"
 	kCharset      = "utf-8"
 	kVersion      = "1.0"
+	kSignTypeRSA  = "RSA"
 	kSignTypeRSA2 = "RSA2"
 	kContentType  = "application/x-www-form-urlencoded;charset=utf-8"
 	kTimeFormat   = "2006-01-02 15:04:05"

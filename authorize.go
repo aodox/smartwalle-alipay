@@ -87,7 +87,7 @@ func (c *Client) AccountAuth(param AccountAuth) (result string, err error) {
 		}
 	}
 
-	values.Add(kFieldSignType, kSignTypeRSA2)
+	values.Add(kFieldSignType, c.getSignType())
 
 	signature, err := c.sign(values)
 	if err != nil {

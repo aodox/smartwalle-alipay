@@ -81,7 +81,7 @@ func callback(writer http.ResponseWriter, request *http.Request) {
 
 	log.Println("回调验证签名通过")
 
-	// 示例一：使用已有接口进行查�?
+	// 示例一：使用已有接口进行查询
 	var outTradeNo = request.Form.Get("out_trade_no")
 	var p = alipay.TradeQuery{}
 	p.OutTradeNo = outTradeNo

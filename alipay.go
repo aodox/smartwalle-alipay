@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -59,6 +60,7 @@ type Client struct {
 	aliCertSN     string
 
 	// 签名和验签
+	signType  string
 	signer    Signer
 	verifiers map[string]Verifier
 }
@@ -132,12 +134,56 @@ func WithPastSandboxGateway() OptionFunc {
 	return WithSandboxGateway(kPastSandboxGateway)
 }
 
+// WithSignType sets request sign_type. Supported: RSA (SHA1) and RSA2 (SHA256). Default RSA2.
+func WithSignType(signType string) OptionFunc {
+	return func(c *Client) {
+		c.signType = signType
+	}
+}
+
+func normalizeSignType(signType string) (string, crypto.Hash, error) {
+	switch strings.ToUpper(strings.TrimSpace(signType)) {
+	case "", kSignTypeRSA2:
+		return kSignTypeRSA2, crypto.SHA256, nil
+	case kSignTypeRSA:
+		return kSignTypeRSA, crypto.SHA1, nil
+	default:
+		return "", 0, fmt.Errorf("unsupported sign type %q", signType)
+	}
+}
+
+func (c *Client) getSignType() string {
+	if c == nil || strings.TrimSpace(c.signType) == "" {
+		return kSignTypeRSA2
+	}
+	return c.signType
+}
+
+func (c *Client) getSignHash() crypto.Hash {
+	if c != nil && strings.EqualFold(c.getSignType(), kSignTypeRSA) {
+		return crypto.SHA1
+	}
+	return crypto.SHA256
+}
+
 // New 初始化支付宝客户端
 //
 //	appId - 支付宝应用 id
 //	privateKey - 应用私钥，开发者自己生成
 //	production - 是否为生产环境，传 false 的时候为沙箱环境，用于开发测试，正式上线的时候需要改为 true
 func New(appId, privateKey string, production bool, opts ...OptionFunc) (client *Client, err error) {
+	// Resolve signType from options before building the signer.
+	tmp := &Client{signType: kSignTypeRSA2}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(tmp)
+		}
+	}
+	signType, hash, err := normalizeSignType(tmp.signType)
+	if err != nil {
+		return nil, err
+	}
+
 	// 解析应用私钥
 	priKey, err := ncrypto.DecodePrivateKey([]byte(privateKey)).PKCS1().RSAPrivateKey()
 	if err != nil {
@@ -146,8 +192,13 @@ func New(appId, privateKey string, production bool, opts ...OptionFunc) (client 
 			return nil, err
 		}
 	}
-	var signer = nsign.New(nsign.WithMethod(nsign.NewRSAMethod(crypto.SHA256, priKey, nil)), nsign.WithEncoder(Encoder{}))
-	return NewWithSigner(appId, signer, production, opts...)
+	var signer = nsign.New(nsign.WithMethod(nsign.NewRSAMethod(hash, priKey, nil)), nsign.WithEncoder(Encoder{}))
+	client, err = NewWithSigner(appId, signer, production, opts...)
+	if err != nil {
+		return nil, err
+	}
+	client.signType = signType
+	return client, nil
 }
 
 // NewWithSigner 创建一个使用自定义签名的支付宝客户端
@@ -177,6 +228,7 @@ func NewWithSigner(appId string, signer nsign.Signer, production bool, opts ...O
 	client.Client = http.DefaultClient
 	client.location = time.Local
 
+	client.signType = kSignTypeRSA2
 	client.signer = signer
 	client.verifiers = make(map[string]Verifier)
 
@@ -185,6 +237,12 @@ func NewWithSigner(appId string, signer nsign.Signer, production bool, opts ...O
 			opt(client)
 		}
 	}
+
+	signType, _, err := normalizeSignType(client.signType)
+	if err != nil {
+		return nil, err
+	}
+	client.signType = signType
 
 	return client, nil
 }
@@ -214,7 +272,7 @@ func (c *Client) SetEncryptKey(key string) error {
 
 func (c *Client) loadVerifier(sn string, pub *rsa.PublicKey) Verifier {
 	c.aliCertSN = sn
-	var verifier = nsign.New(nsign.WithMethod(nsign.NewRSAMethod(crypto.SHA256, nil, pub)), nsign.WithEncoder(Encoder{}))
+	var verifier = nsign.New(nsign.WithMethod(nsign.NewRSAMethod(c.getSignHash(), nil, pub)), nsign.WithEncoder(Encoder{}))
 	c.verifiers[c.aliCertSN] = verifier
 	return verifier
 }
@@ -349,7 +407,7 @@ func (c *Client) URLValues(param Param) (url.Values, error) {
 	values.Add(kFieldMethod, param.APIName())
 	values.Add(kFieldFormat, kFormat)
 	values.Add(kFieldCharset, kCharset)
-	values.Add(kFieldSignType, kSignTypeRSA2)
+	values.Add(kFieldSignType, c.getSignType())
 	values.Add(kFieldTimestamp, time.Now().In(c.location).Format(kTimeFormat))
 	values.Add(kFieldVersion, kVersion)
 	if c.appCertSN != "" {
